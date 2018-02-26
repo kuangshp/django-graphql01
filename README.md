@@ -1,3 +1,5 @@
+>[官网地址](http://docs.graphene-python.org/projects/django/en/latest/tutorial-relay/#)
+
 ### 一、开发环境
 * 1、`python3.6`
 * 2、`django2.0`
@@ -151,3 +153,41 @@
     ```
     
 * 5、生成数据库映射及启动项目,直接在浏览器上访问
+
+### 四、可以对上面的代码调整
+* 1、把`Mutations`也单独定义在各自的`schema.py`中
+
+    ```python
+    # 定义一个总的mutation出口
+    class Mutation(graphene.AbstractType):
+        create_user = CreateUser.Field()
+        create_blog = CreateBlog.Field()
+    ```
+    
+* 2、在总的`schema.py`中引入类型`Query`一样的操作
+
+    ```python
+    class Mutations(blog.schema.Mutation, graphene.ObjectType):
+        # 总的Schema的mutations入口
+        pass
+    ```
+    
+* 3、输入数据类型可以直接定义在`mutation`里面
+
+    ```python
+    class CreateUser(graphene.Mutation):
+        # api的输入参数(类名可以随便定义)
+        class Arguments:
+            name = graphene.String(required=True)
+            gender = graphene.String(required=True)
+    
+        # api的响应参数
+        ok = graphene.Boolean()
+        user = graphene.Field(UserType)
+    
+        # api的相应操作，这里是create
+        def mutate(self, info, name, gender):
+            user = User.objects.create(name=name, gender=gender)
+            ok = True
+            return CreateUser(user=user, ok=ok)
+    ```
